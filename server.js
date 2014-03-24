@@ -1,3 +1,4 @@
+var pkg = require('package.json');
 var config = require('config/config.js');
 var Docker = require('dockerode');
 var docker = new Docker(config.dockerode);
@@ -7,18 +8,7 @@ var named = require('node-named');
 var server = named.createServer();
 
 server.listen(config.node - named.port, config.node - named.bindip, function() {
-	console.log('listening for dns queries on %s:%s', config.node
-			- named.bindip, config.node - named.port);
-});
-
-server.on('query', function(query) {
-	var domain = query.name();
-	console.log('DNS Query: %s', domain)
-	var target = new SoaRecord(domain, {
-		serial : 12345
-	});
-	query.addAnswer(domain, target, 'SOA');
-	server.send(query);
+	console.log('listening for dns queries on %s:%s', config.node_named.bindip, config.node_named.port);
 });
 
 
@@ -36,5 +26,12 @@ var init = function() {
 }
 
 var buildrecs = function(c, cb) {
-	console.log(c);
+	console.log("buildrec from containter: ", c);
 }
+
+docker.getEvents({}, function(e) {
+	console.log("event: ", e);
+});
+
+
+
