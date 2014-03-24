@@ -2,7 +2,7 @@
 # https://index.docker.io/u/dockerfile/nodejs/
 FROM dockerfile/nodejs
 
-RUN apt-get install git ssh-server
+RUN apt-get install git ssh-server screen
 
 RUN mkdir /var/run/sshd 
 RUN echo 'root:CHANGEME' | chpasswd

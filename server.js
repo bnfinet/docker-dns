@@ -30,12 +30,12 @@ var init = function(cb) {
     // do a big lookup and store what's there to store
     docker.listContainers({all: 1}, function(err, containers) {
 	async.map(containers, buildrecs, function(err, res) {
-	    if (err) {
-		console.log(err);
-	    } else {
-		cb(res);
-	    }
-	});
+		    if (err) {
+		    	console.log(err);
+		    } else {
+		    	cb(res);
+		    }	
+		});
     });
 };
 
