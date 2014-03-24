@@ -1,0 +1,38 @@
+{
+  "name": "docker-dns",
+  "version": "0.0.1",
+  "description": "dns server backed by the docker api",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [
+    "docker",
+    "dns",
+    "api"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:bnfinet/docker-dns.git"
+  },
+  "bugs": {
+    "url": "https://github.com:bnfinet/docker-dns/issues"
+  },
+  "author": "Benjamin Foote",
+  "license": "MIT",
+  "dependencies": {
+    "async": "~0.2.9",
+    "lodash": "~2.4.1",
+    "node-named": "0.0.1",
+    "dockerode": "~1.2.8"
+  },
+  "devDependencies": {
+    "grunt-nodemon": "~0.1.2",
+    "grunt-contrib-watch": "~0.5.3",
+    "grunt": "~0.4.2",
+    "grunt-exec": "~0.4.2",
+    "grunt-contrib-jshint": "~0.8.0",
+    "grunt-cli": "~0.1.13"
+  }
+}

@@ -1,0 +1,9 @@
+{
+    "node":true,
+    "evil":false,
+    "indent":4,
+    "passfail":false,
+    "plusplus":false,
+    "white":false,
+    "smarttabs":true
+}
