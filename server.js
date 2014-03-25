@@ -191,12 +191,18 @@ server.on('query', function(query) {
 			query.addAnswer(domain, a[domain]);
 		} else if (cname[domain]) {
 			query.addAnswer(domain, cname[domain]);
+			if (config.debug) {
+				console.log('cname a: ',cname[domain], a[cname[domain]]);
+			}
 			query.addAnswer(cname[domain], a[cname[domain]]);
 		}
 		server.send(query);
 		break;
 	case 'CNAME':
 		query.addAnswer(domain, cname[domain]);
+		if (config.debug) {
+			console.log('cname a: ',cname[domain], a[cname[domain]]);
+		}
 		query.addAnswer(cname[domain], a[cname[domain]]);
 		server.send(query);
 		break;
