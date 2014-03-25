@@ -36,50 +36,61 @@ var a = [];
 var cname = [];
 var srv = [];
 
+var refreshRecs = function() {
+    a = [];
+    cname = [];
+    srv = [];
+    init(function() {
+	console.log("refreshed records");
+    });
+};
+
 var buildrecs = function(c, cb) {
 	// console.log(c);
 	var cont = docker.getContainer(c.Id);
 	cont.inspect(function(err, insp) {
-		if (err) {
-			console.log(err);
-		} else {
-			var ip = getip(insp);
-
-			// a record for UUID -> ipadress
-			a[fqdn(c.Id)] = new named.ARecord(ip);
-
-			// a record for first12(UUID) -> ipadress
-			var uuid12 = c.Id.substring(0, 12);
-			a[fqdn(uuid12)] = new named.ARecord(ip);
-
-			// cname hostname -> first12(UUID)
-			if (insp.Config.Hostname) {
-				cname[fqdn(insp.Config.Hostname)] = new named.CNAMERecord(
-						fqdn(uuid12));
-			}
-
-			var iHPb = insp.HostConfig.PortBindings;
-			async.each(Object.keys(iHPb),
-				function(portproto, done) {
-					// foreach portbinding
-					if (portproto && iHPb[portproto]) {
-						console.log('stuff: ', iHPb[portproto]);
-						var port = iHPb[portproto][0].HostPort;
-						putsrvrec(portproto, uuid12, uuid12, port);
-						// SRV record _service._proto.hostname.faketld port
-						// first12.faketld
-						if (insp.Config.Hostname) {
-							putsrvrec(portproto, insp.Config.Hostname,
-									uuid12, port);
-						}
-						if (insp.Name) {
-							putsrvrec(portproto, cleanName(insp.Name), uuid12, port);
-						}
-					}
-					done();
-				}, function() {
-					cb();
-				});
+	    if (err) {
+		console.log(err);
+	    } else {
+		var ip = getip(insp);
+		
+		// a record for UUID -> ipadress
+		a[fqdn(c.Id)] = new named.ARecord(ip);
+		
+		// a record for first12(UUID) -> ipadress
+		var uuid12 = c.Id.substring(0, 12);
+		a[fqdn(uuid12)] = new named.ARecord(ip);
+		
+		// cname hostname -> first12(UUID)
+		if (insp.Config.Hostname) {
+		    cname[fqdn(insp.Config.Hostname)] = new named.CNAMERecord(
+			fqdn(uuid12));
+		}
+		
+		var iHPb = insp.HostConfig.PortBindings;
+		async.each(Object.keys(iHPb),
+			   function(portproto, done) {
+			       // foreach portbinding
+			       if (portproto && iHPb[portproto]) {
+				   if (config.debug) {
+				       console.log('ports: ', iHPb[portproto]);
+				   }
+				   var port = iHPb[portproto][0].HostPort;
+				   putsrvrec(portproto, uuid12, uuid12, port);
+				   // SRV record _service._proto.hostname.faketld port
+				   // first12.faketld
+				   if (insp.Config.Hostname) {
+				       putsrvrec(portproto, insp.Config.Hostname,
+						 uuid12, port);
+				   }
+				   if (insp.Name) {
+				       putsrvrec(portproto, cleanName(insp.Name), uuid12, port);
+				   }
+			       }
+			       done();
+			   }, function() {
+			       cb();
+			   });
 		}
 	});
 };
@@ -94,14 +105,18 @@ var fqdn = function(host) {
 };
 
 var putsrvrec = function(portproto, name, uuid12, port) {
-	var s = esl.getService(portproto);
+    var s = esl.getService(portproto);
+    
+    // add a traditional host specific RFC compliant SRV record
+    var srvname = '_' + s.service + '._' + s.proto + '.' + name;
+    if (!srv[fqdn(srvname)]) {
+	srv[fqdn(srvname)] = [];
+    } else {
+	
 
-	// add a traditional host specific RFC compliant SRV record
-	var srvname = '_' + s.service + '._' + s.proto + '.' + name;
-	if (!srv[fqdn(srvname)]) {
-		srv[fqdn(srvname)] = [];
-	}
 	srv[fqdn(srvname)].push(new named.SRVRecord(fqdn(uuid12), parseInt(port)));
+    }
+
 
 	// and do a 'skydns' style service record generalized for the host
 	if (!srv[fqdn(name)]) {
@@ -127,28 +142,34 @@ var getip = function(insp) {
 };
 
 
-var pollInterval = 61 * 1000;
+var pollInterval = config.pollinterval;
 var last = Date.now() - pollInterval;
 var pollForEvents = function() {
-	var time = Date.now();
-	docker.getEvents({since: last}, function(e) {
-		if (e) {
-			if (config.debug) {
-				console.log("event: ", e);
-			}
-		}	
-		last = time - pollInterval;
+    var time = Date.now();
+    docker.getEvents({since: last}, function(err, data) {
+	    if (config.debug) {
+		console.log("---EVENT---", last, data);
+	    }
+	    if (err) {
+		console.log("event error: ", err);
+	    } else {
+
+	    }	
+	    last = time - pollInterval;
 	});
 };
-setInterval(pollForEvents, pollInterval);
+
 
 init(function(res) {
-	console.log('initialized');
-	if (config.debug) {
-		console.log(a);
-		console.log(cname);
-		console.log(srv);
-	}
+    console.log('initialized');
+    if (config.debug) {
+	console.log(a);
+	console.log(cname);
+	console.log(srv);
+    }
+//    pollForEvents();
+//    setInterval(pollForEvents, pollInterval);
+    setInterval(refreshRecs, pollInterval);
 });
 
 
