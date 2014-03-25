@@ -8,22 +8,8 @@ var async = require('async');
 var named = require('node-named');
 var server = named.createServer();
 
-
-
 server.listen(config.node_named.port, config.node_named.bindip, function() {
     console.log('listening for dns queries on %s:%s', config.node_named.bindip, config.node_named.port);
-});
-
-server.on('clientError', function(error) {
-    console.log("there was a clientError: %s", error);
-});
-
-server.on('uncaughtException', function(error) {
-    console.log("there was an excepton: %s", error.message());
-});
-
-docker.info(function(err, data) {
-    console.log("info: ", data);
 });
 
 var _storage = [];
@@ -40,7 +26,7 @@ var init = function(cb) {
     });
 };
 
-var soa = new named.SOARecord(config.faketld);
+var soa = new named.SOARecord(config.faketld, {ttl: 10}) ;
 var a = [];
 var cname = [];
 var srv = [];
@@ -52,7 +38,7 @@ var buildrecs = function(c, cb) {
 	if (err) {
 	    console.log(err);
 	} else {
-	    console.log('INSPECT INSPECT ', insp.Config.Hostname, insp.NetworkSettings.IPAddress, insp.NetworkSettings.Ports);
+//	    console.log('INSPECT INSPECT ', insp.Config.Hostname, insp.NetworkSettings.IPAddress, insp.NetworkSettings.Ports);
 //	    insp.HostConfig.PortBindings
 	    var ip = getip(insp);
 
@@ -61,25 +47,32 @@ var buildrecs = function(c, cb) {
 
 	    // a record for first12(UUID) -> ipadress
 	    var uuid12 = c.Id.substring(0,12);
-	    a[fqdn(uuid12)] = a[fqdn(c.Id)];
+	    a[fqdn(uuid12)] = new named.ARecord(ip);
 
 	    // cname hostname -> first12(UUID)
 	    if (insp.Config.Hostname) {
 		cname[fqdn(insp.Config.Hostname)] = new named.CNAMERecord(fqdn(uuid12));
 	    }
 
-	    async.each(insp.HostConfig.PortBindings, function(e, done) {
+	    var iHPb = insp.HostConfig.PortBindings;
+	    async.each(Object.keys(iHPb), function(portproto, done) {
 		// foreach portbinding
-		var portproto = Object.getKeys(e)[0];	
-		putsrvrec(portproto, uuid12, uuid12, e[portproto][0].HostPort);
-		// SRV record _service._proto.hostname.faketld port first12.faketld
-		if (insp.Config.Hostname) {
-		    putsrvrec(portproto, insp.Config.Hostname, uuid12, e[portproto][0].HostPort);
+		if (portproto && iHPb[portproto]) {
+		    console.log('stuff: ', iHPb[portproto]);
+		    var port = iHPb[portproto][0].HostPort;
+		    putsrvrec(portproto, uuid12, uuid12, port);
+		    // SRV record _service._proto.hostname.faketld port first12.faketld
+		    if (insp.Config.Hostname) {
+			putsrvrec(portproto, insp.Config.Hostname, uuid12, port);
+		    }
 		}
+
+		done();
+
 //		if (insp.Name) {
 //		    putsrvrec(portproto, cleanName(insp.Name), uuid12, e[portproto][0].HostPort);
 //		}
-	    });
+	    }, function(){cb()});
 	}
     });
 };
@@ -88,10 +81,10 @@ var fqdn = function (host) {
     return host + '.' + config.faketld;
 }
 
-var putsrvrec = function(porproto, name, uuid12, port) {
-    var s = esl.getServices(portproto);
+var putsrvrec = function(portproto, name, uuid12, port) {
+    var s = esl.getService(portproto);
     var srvname = '_' + s.service + '._' + s.proto + '.' + name;
-    srv[fqdn(srvname)] = new named.SRVRecord(fqdn(uuid12), port);
+    srv[fqdn(srvname)] = new named.SRVRecord(fqdn(uuid12), parseInt(port));
 }
 
 var getip = function(insp) {
@@ -107,15 +100,16 @@ var getip = function(insp) {
 	return insp.NetworkSettings.IPAddress;
     }
 }
- 
 
 docker.getEvents({}, function(e) {
     console.log("event: ", e);
 });
 
 init(function(res){
-    _storage = res;
     console.log('initialized');
+    console.log(a);
+    console.log(cname);
+    console.log(srv);
 });
 
 
@@ -125,16 +119,20 @@ server.on('query', function(query) {
     console.log('DNS Query: (%s) %s', type, domain);
     switch (type) {
     case 'A':
-        query.addAnswer(domain, a[domain], 'A');
+	if (a[domain]) {
+            query.addAnswer(domain, a[domain]);
+	} else if (cname[domain]) {
+            query.addAnswer(domain, cname[domain]);
+	}
         break;
     case 'CNAME':
-        query.addAnswer(domain, cname[domain], 'CNAME');
+        query.addAnswer(domain, cname[domain]);
         break;
     case 'SOA':
-        query.addAnswer(domain, soa, 'SOA');
+        query.addAnswer(domain, soa);
         break;
     case 'SRV':
-        query.addAnswer(domain, record, 'SRV');
+        query.addAnswer(domain, srv[domain]);
         break;
 //    case 'TXT':
 //       var record = new named.TXTRecord('hello world');
@@ -144,4 +142,12 @@ server.on('query', function(query) {
     server.send(query);
 });
 
+
+server.on('clientError', function(error) {
+    console.log("there was a clientError: ", error);
+});
+
+server.on('uncaughtException', function(error) {
+    console.log("there was an excepton: ", error.message);
+});
 
