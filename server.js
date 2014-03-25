@@ -142,7 +142,6 @@ var pollForEvents = function() {
 };
 setInterval(pollForEvents, pollInterval);
 
-
 init(function(res) {
 	console.log('initialized');
 	if (config.debug) {
