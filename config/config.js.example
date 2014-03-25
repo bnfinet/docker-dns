@@ -4,6 +4,7 @@ config.development = true;
 config.debug = true;
 
 config.faketld = "docker.local";
+config.publicip = "192.168.0.20"; // for 'publicly' mapped ports
 
 config.dockerode = {
 		socketPath: '/var/run/docker.sock'
@@ -13,6 +14,5 @@ config.node_named = {
 		port: 53,
 		bindip: '0.0.0.0'
 }
-
 
 module.exports = config;
