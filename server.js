@@ -192,18 +192,18 @@ server.on('query', function(query) {
 		} else if (cname[domain]) {
 			query.addAnswer(domain, cname[domain]);
 			if (config.debug) {
-				console.log('cname a: ',cname[domain].target, a[cname[domain]]);
+				console.log('cname a: ',cname[domain].target, a[cname[domain].target]);
 			}
-			query.addAnswer(cname[domain].target, a[cname[domain]]);
+			query.addAnswer(cname[domain].target, a[cname[domain].target]);
 		}
 		server.send(query);
 		break;
 	case 'CNAME':
 		query.addAnswer(domain, cname[domain]);
 		if (config.debug) {
-			console.log('cname a: ',cname[domain].target, a[cname[domain]]);
+			console.log('cname a: ',cname[domain].target, a[cname[domain].target]);
 		}
-		query.addAnswer(cname[domain].target, a[cname[domain]]);
+		query.addAnswer(cname[domain].target, a[cname[domain].target]);
 		server.send(query);
 		break;
 	case 'SOA':
