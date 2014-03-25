@@ -80,12 +80,13 @@ var buildrecs = function(c, cb) {
 							// SRV record _service._proto.hostname.faketld port
 							// first12.faketld
 							if (insp.Config.Hostname) {
-								putsrvrec(portproto, insp.Config.Hostname,
-										uuid12, port);
+								putsrvrec(portproto, insp.Config.Hostname, uuid12, port);
+								putsrvrecForServiceName(portproto, insp.Config.Hostname, uuid12, port);
 							}
 							if (insp.Name) {
-								putsrvrec(portproto, cleanName(insp.Name),
-										uuid12, port);
+								var clean = cleanName(insp.Name);
+								putsrvrec(portproto, clean ,uuid12, port);
+								putsrvrecForServiceName(portproto, clean ,uuid12, port);
 							}
 						}
 						done();
@@ -105,18 +106,14 @@ var fqdn = function(host) {
 	return host + '.' + config.faketld;
 };
 
-var putsrvrec = function(portproto, name, uuid12, port) {
+var putsrvrecForServiceName = function(portproto, name, uuid12, port) {
 	var s = esl.getService(portproto);
-
 	// add a traditional host specific RFC compliant SRV record
 	var srvname = '_' + s.service + '._' + s.proto + '.' + name;
-	if (!srv[fqdn(srvname)]) {
-		srv[fqdn(srvname)] = [];
-	} else {
-		srv[fqdn(srvname)].push(new named.SRVRecord(fqdn(uuid12),
-				parseInt(port)));
-	}
+	putsrvrec(portproto, srvname, uuid12, port);
+};
 
+var putsrvrec = function(portproto, name, uuid12, port) {
 	// and do a 'skydns' style service record generalized for the host
 	if (!srv[fqdn(name)]) {
 		srv[fqdn(name)] = [];
@@ -135,6 +132,7 @@ var putsrvrec = function(portproto, name, uuid12, port) {
 		}
 	});
 };
+
 
 var getip = function(insp) {
 	if (insp.HostConfig.PortBindings
