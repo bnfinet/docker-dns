@@ -1,5 +1,6 @@
 var pkg = require('./package.json');
 var config = require('./config/config.js');
+var esl = require('./lib/etc-services-lookup.js');
 var Docker = require('dockerode');
 var docker = new Docker(config.dockerode);
 var async = require('async');
@@ -47,7 +48,13 @@ var buildrecs = function(c, cb) {
 	    console.log(err);
 	} else {
 	    console.log('INSPECT INSPECT ', insp.Config.Hostname, insp.NetworkSettings.IPAddress, insp.NetworkSettings.Ports);
-	    console.log(insp.HostConfig.PortBindings);
+//	    insp.HostConfig.PortBindings
+	    async.map(insp.HostConfig.PortBindings, function(e, done) {
+		    var portproto = Object.getKeys(e)[0];	
+	    	done(null, esl.getServices(portproto));
+		}, function(err, res) {
+			
+		});
 	}
     });
 };
