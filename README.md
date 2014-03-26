@@ -24,7 +24,7 @@ which includes mapping specific services to multiple ports.
 
 You'd like to be able to connect to ports on your dockerbox in a useful way, but you don't
 want to have to go lookup the port mapping every time you need to wire things up.  This is called
-service discovery and there's a (DNS record)[http://en.wikipedia.org/wiki/SRV_record] for that.
+service discovery and there's a [DNS record](http://en.wikipedia.org/wiki/SRV_record) for that.
 
 	you@laptop:~$ host -t SRV _ssh._tcp.sshdhost.docker.local
 	sshdhost.docker.local has SRV record 0 10 49158 e5c777e21c60.docker.local.
