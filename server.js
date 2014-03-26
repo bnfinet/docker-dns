@@ -111,8 +111,10 @@ var fqdn = function(host) {
 var putsrvrecForServiceName = function(portproto, name, uuid12, port) {
 	var s = esl.getService(portproto);
 	// add a traditional host specific RFC compliant SRV record
-	var srvname = '_' + s.service + '._' + s.proto + '.' + name;
-	putsrvrec(portproto, srvname, uuid12, port);
+	if (s) {
+		var srvname = '_' + s.service + '._' + s.proto + '.' + name;
+		putsrvrec(portproto, srvname, uuid12, port);
+	}
 };
 
 var putsrvrec = function(portproto, name, uuid12, port) {
