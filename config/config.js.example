@@ -1,18 +1,32 @@
 var config = {};
 
 config.development = true;
-config.debug = true;
+config.debug = false;
 
+// a fake top level domain
+// appended to all generated hostnames
 config.faketld = "docker.local";
-config.publicip = "192.168.0.20"; // for 'publicly' mapped ports
 
+// frequency of dns entry refresh from docker containers
+config.pollinterval = 17 * 1000;
+
+// for 'publicly' exposed ports
+// when a service is offered on '0.0.0.0'
+// this is the IP lookups will return
+config.publicip = "192.168.0.20";
+
+// dockerode config
+// see: https://github.com/apocas/dockerode
 config.dockerode = {
 		socketPath: '/var/run/docker.sock'
 };
 
+// node-named config
+// see: https://github.com/trevoro/node-named
+// bindip is for this container only, not docker-wide 
 config.node_named = {
 		port: 53,
 		bindip: '0.0.0.0'
-}
+};
 
 module.exports = config;

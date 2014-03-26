@@ -19,6 +19,7 @@ var init = function(cb) {
 	docker.listContainers({
 		all : 1
 	}, function(err, containers) {
+		// TODO create a temp var to hold the recs while they get built
 		async.map(containers, buildrecs, function(err, res) {
 			if (err) {
 				console.log(err);
@@ -29,6 +30,7 @@ var init = function(cb) {
 	});
 };
 
+// TODO move to something like recs = { a: [], cname: [], srv: [] }
 var soa = new named.SOARecord(config.faketld, {
 	ttl : 10
 });
