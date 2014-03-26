@@ -29,16 +29,20 @@ service discovery and there's a [DNS record](http://en.wikipedia.org/wiki/SRV_re
 	you@laptop:~$ host -t SRV _ssh._tcp.awesomeapp.docker.local
 	awesomeapp.docker.local has SRV record 0 10 49158 fbc938bbfec1.docker.local.
 
-or just provide the host to get all srv records 
+Where port 49158 is the docker side published port for ssh
+
+Then you can do things like...
+
+	PORT=$(host -t SRV awesomeapp.docker.local | awk '{print $7}');
+	ssh -p $PORT awesomeapp.docker.local
+
+Alternatively you can provide just the host to get all srv records for that container
 
 	you@laptop:~$ host -t SRV awesomeapp.docker.local
 	awesomeapp.docker.local has SRV record 0 10 49175 fbc938bbfec1.docker.local.
 	awesomeapp.docker.local has SRV record 0 10 49176 fbc938bbfec1.docker.local.
 
-then you can do
-
-	PORT=$(host -t SRV awesomeapp.docker.local | awk '{print $7}');
-	ssh -p $PORT awesomeapp.docker.local
+That doesn't tell you which services are running but it at least shows you the ports for that container.
 
 
 ## how we do that
@@ -49,7 +53,7 @@ for each container...
 - container ID (first 12 of the UUID) is an A record
 - a cleaned version of the image name is CNAME to the A record
 - hostname (run -h) is CNAME to the A record
-and for all exposed ports on each container several SRV records are created by looking up the 'port/proto' (such as '22/tcp') in /etc/services:
+and for all exposed ports on each container several SRV records are created by looking up the container side 'port/protocol' (such as '22/tcp') in /etc/services:
 
 ````
 	_service._protocol.hostname.docker.local
@@ -77,6 +81,7 @@ https://github.com/bnfinet/docker-dns/issues
 
 ## next steps
 - setup multi host and wildcard lookup support (_sshd.*.docker.local)
+- customized /etc/services file to include "modern" services (redis, mongodb, couchdb, ...)
 - ipv6 AAAA records
 - use Docker's event stream instead of polling
 - use a temporary name space for record creation
