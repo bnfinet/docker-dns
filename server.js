@@ -69,6 +69,11 @@ var buildrecs = function(c, cb) {
 						fqdn(uuid12));
 			}
 
+		if (insp.Name) {
+		    var clean = cleanName(insp.Name);
+		    cname[fqdn(clean)] = new named.CNAMERecord(
+			fqdn(uuid12));
+		}
 			var iHPb = insp.HostConfig.PortBindings;
 			if (iHPb) {
 				async.each(Object.keys(iHPb),
@@ -87,7 +92,6 @@ var buildrecs = function(c, cb) {
 									putsrvrecForServiceName(portproto, insp.Config.Hostname, uuid12, port);
 								}
 								if (insp.Name) {
-									var clean = cleanName(insp.Name);
 									putsrvrec(portproto, clean ,uuid12, port);
 									putsrvrecForServiceName(portproto, clean ,uuid12, port);
 								}
