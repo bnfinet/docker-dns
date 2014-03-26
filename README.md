@@ -51,10 +51,11 @@ for each container...
 - hostname (run -h) is CNAME to the A record
 and for all exposed ports on each container several SRV records are created by looking up the 'port/proto' (such as '22/tcp') in /etc/services:
 
+````
 	_service._protocol.hostname.docker.local
 	_service._protocol.containerID.docker.local
 	_service._protocol.imagename.docker.local
-
+````
 
 ## features
 
