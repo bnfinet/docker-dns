@@ -26,31 +26,34 @@ You'd like to be able to connect to ports on your dockerbox in a useful way, but
 want to have to go lookup the port mapping every time you need to wire things up.  This is called
 service discovery and there's a [DNS record](http://en.wikipedia.org/wiki/SRV_record) for that.
 
-	you@laptop:~$ host -t SRV _ssh._tcp.sshdhost.docker.local
-	sshdhost.docker.local has SRV record 0 10 49158 e5c777e21c60.docker.local.
+	you@laptop:~$ host -t SRV _ssh._tcp.awesomeapp.docker.local
+	awesomeapp.docker.local has SRV record 0 10 49158 fbc938bbfec1.docker.local.
 
-or just
+or just provide the host to get all srv records 
 
-	you@laptop:~$ host -t SRV sshdhost.docker.local
-	sshdhost.docker.local has SRV record 0 10 49158 e5c777e21c60.docker.local.
+	you@laptop:~$ host -t SRV awesomeapp.docker.local
+	awesomeapp.docker.local has SRV record 0 10 49175 fbc938bbfec1.docker.local.
+	awesomeapp.docker.local has SRV record 0 10 49176 fbc938bbfec1.docker.local.
 
 then you can do
 
-	PORT=$(host -t SRV sshdhost.docker.local | awk '{print $7}');
-	ssh -p $PORT sshdhost.docker.local
+	PORT=$(host -t SRV awesomeapp.docker.local | awk '{print $7}');
+	ssh -p $PORT awesomeapp.docker.local
 
-In addition you get a variety of DNS record mappings.  In this example
-- sshdhost.docker.local CNAME e5c777e21c60.docker.local
-- e5c777e21c60.docker.local A record
 
-## how this works
+## how we do that
 
-docker-dns scans the docker api periodically and builds DNS records for each container...
+docker-dns scans the docker api periodically and builds DNS records
+for each container...
 - UUID is an A record
 - container ID (first 12 of the UUID) is an A record
-- a cleaned version of the  is CNAME to the A record
+- a cleaned version of the image name is CNAME to the A record
 - hostname (run -h) is CNAME to the A record
-- exposed ports are SRV records by looking up the 'port/proto' in /etc/services
+and for all exposed ports on each container several SRV records are created by looking up the 'port/proto' (such as '22/tcp') in /etc/services:
+
+	_service._protocol.hostname.docker.local
+	_service._protocol.containerID.docker.local
+	_service._protocol.imagename.docker.local
 
 
 ## features
@@ -69,6 +72,7 @@ Copy the config file and edit.  See documentation in the comments there.
 ## issues and bugs
 
 on github please....
+https://github.com/bnfinet/docker-dns/issues
 
 ## next steps
 - setup multi host and wildcard lookup support (_sshd.*.docker.local)
