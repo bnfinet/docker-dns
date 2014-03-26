@@ -68,31 +68,33 @@ var buildrecs = function(c, cb) {
 			}
 
 			var iHPb = insp.HostConfig.PortBindings;
-			async.each(Object.keys(iHPb),
-					function(portproto, done) {
-						// foreach portbinding
-						if (portproto && iHPb[portproto]) {
-							if (config.debug) {
-								console.log('ports: ', iHPb[portproto]);
+			if (iHPb) {
+				async.each(Object.keys(iHPb),
+						function(portproto, done) {
+							// foreach portbinding
+							if (portproto && iHPb[portproto]) {
+								if (config.debug) {
+									console.log('ports: ', iHPb[portproto]);
+								}
+								var port = iHPb[portproto][0].HostPort;
+								putsrvrec(portproto, uuid12, uuid12, port);
+								// SRV record _service._proto.hostname.faketld port
+								// first12.faketld
+								if (insp.Config.Hostname) {
+									putsrvrec(portproto, insp.Config.Hostname, uuid12, port);
+									putsrvrecForServiceName(portproto, insp.Config.Hostname, uuid12, port);
+								}
+								if (insp.Name) {
+									var clean = cleanName(insp.Name);
+									putsrvrec(portproto, clean ,uuid12, port);
+									putsrvrecForServiceName(portproto, clean ,uuid12, port);
+								}
 							}
-							var port = iHPb[portproto][0].HostPort;
-							putsrvrec(portproto, uuid12, uuid12, port);
-							// SRV record _service._proto.hostname.faketld port
-							// first12.faketld
-							if (insp.Config.Hostname) {
-								putsrvrec(portproto, insp.Config.Hostname, uuid12, port);
-								putsrvrecForServiceName(portproto, insp.Config.Hostname, uuid12, port);
-							}
-							if (insp.Name) {
-								var clean = cleanName(insp.Name);
-								putsrvrec(portproto, clean ,uuid12, port);
-								putsrvrecForServiceName(portproto, clean ,uuid12, port);
-							}
-						}
-						done();
-					}, function() {
-						cb();
-					});
+							done();
+						}, function() {
+							cb();
+						});
+			}
 		}
 	});
 };
