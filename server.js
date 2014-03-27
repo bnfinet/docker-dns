@@ -2,35 +2,12 @@ var pkg = require('./package.json');
 var config = require('./config/config.js');
 var esl = require('./lib/etc-services-lookup.js');
 var Docker = require('dockerode');
-var docker = new Docker(config.dockerode);
 var async = require('async');
 
 var named = require('node-named');
 var server = named.createServer();
 
-server.listen(config.node_named.port, config.node_named.bindip, function() {
-	console.log('listening for dns queries on %s:%s', config.node_named.bindip,
-			config.node_named.port);
-});
-
-var _storage = [];
-var init = function(cb) {
-	// do a big lookup and store what's there to store
-	docker.listContainers({
-		all : 1
-	}, function(err, containers) {
-		// TODO create a temp var to hold the recs while they get built
-		async.map(containers, buildrecs, function(err, res) {
-			if (err) {
-				console.log(err);
-			} else {
-				cb(res);
-			}
-		});
-	});
-};
-
-// TODO move to something like recs = { a: [], cname: [], srv: [] }
+//TODO move to something like recs = { a: [], cname: [], srv: [] }
 var soa = new named.SOARecord(config.faketld, {
 	ttl : 10
 });
@@ -38,69 +15,133 @@ var a = [];
 var cname = [];
 var srv = [];
 
+
+var main = function() {
+	initializeDockers(function() {
+		pollDockers(function(err, res) {
+			if (config.debug) {
+				console.log(a);
+				console.log(cname);
+				console.log(srv);
+			}
+			if (err) {
+				console.log('initialization failed');
+			} else {
+				console.log('initialized');
+
+				server.listen(config.node_named.port, config.node_named.bindip, function() {
+					console.log('listening for dns queries on %s:%s', config.node_named.bindip,
+							config.node_named.port);
+				});
+
+				// pollForEvents();
+				// setInterval(pollForEvents, pollInterval);
+				setInterval(refreshRecs, pollInterval);
+			}
+		});
+	});
+};
+
+var initializeDockers = function (cb) {
+	async.each(config.dockers, function(docker, done) {
+		docker.D = new Docker(docker.dockerode);
+		done();
+	}, cb);
+};
+
+var pollDockers = function(cb) {
+	async.each(config.dockers, function(docker, done) {
+		docker.D.listContainers({
+			all : 1
+		}, function(err, containers) {
+			// TODO create a temp var to hold the recs while they get built
+			async.map(containers, function(container, next) {
+				inspectAndBuild(docker, container, next);
+			}, function(err, res) {
+				if (err) {
+					console.log(err);
+				} else {
+					cb(res);
+				}
+			});
+		});
+		done();
+	}, cb);
+};
+
+
 var refreshRecs = function() {
 	a = [];
 	cname = [];
 	srv = [];
-	init(function() {
+	pollDockers(function() {
 		console.log("refreshed records");
 	});
 };
 
-var buildrecs = function(c, cb) {
+
+var buildRecords = function (insp, c, fqdnFn, ip, cb) {
+	// A UUID -> ip
+	a[fqdnFn(c.Id)] = new named.ARecord(ip);
+
+	// A first12(UUID) -> ip
+	var uuid12 = c.Id.substring(0, 12);
+	a[fqdnFn(uuid12)] = new named.ARecord(ip);
+
+	// CNAME hostname -> first12(UUID)
+	if (insp.Config.Hostname) {
+		cname[fqdnFn(insp.Config.Hostname)] = new named.CNAMERecord(
+				fqdnFn(uuid12));
+	}
+	// container name, or clean name
+	var cName = cleanName(insp.Name);
+	if (cName) {
+		cname[fqdnFn(cName)] = new named.CNAMERecord(fqdnFn(uuid12));
+	}
+	var iHPb = insp.HostConfig.PortBindings;
+	if (!iHPb) {
+		cb();
+	} else {
+		async.each(Object.keys(iHPb), function(portproto, done) {
+			// foreach portbinding
+			if (portproto && iHPb[portproto]) {
+				if (config.debug) {
+					console.log('ports: ', iHPb[portproto]);
+				}
+				var port = iHPb[portproto][0].HostPort;
+				putsrvrec(portproto, uuid12, uuid12, port);
+				// SRV record _service._proto.hostname.faketld port
+				// first12.faketld
+				if (insp.Config.Hostname) {
+					putsrvrec(portproto, insp.Config.Hostname, uuid12, port);
+					putsrvrecForServiceName(portproto, insp.Config.Hostname, uuid12, port);
+				}
+				if (cName) {
+					putsrvrec(portproto, cName ,uuid12, port);
+					putsrvrecForServiceName(portproto, cName ,uuid12, port);
+				}
+			}
+			done();
+		}, function() {
+			cb();
+		});
+	}
+};
+
+var inspectAndBuild = function(docker, c, cb) {
 	// console.log(c);
-	var cont = docker.getContainer(c.Id);
+	var cont = docker.D.getContainer(c.Id);
 	cont.inspect(function(err, insp) {
 		if (err) {
 			console.log(err);
 		} else {
-			var ip = getip(insp);
-
-			// a record for UUID -> ipadress
-			a[fqdn(c.Id)] = new named.ARecord(ip);
-
-			// a record for first12(UUID) -> ipadress
-			var uuid12 = c.Id.substring(0, 12);
-			a[fqdn(uuid12)] = new named.ARecord(ip);
-
-			// cname hostname -> first12(UUID)
-			if (insp.Config.Hostname) {
-				cname[fqdn(insp.Config.Hostname)] = new named.CNAMERecord(
-						fqdn(uuid12));
-			}
-
-		if (insp.Name) {
-		    var clean = cleanName(insp.Name);
-		    cname[fqdn(clean)] = new named.CNAMERecord(
-			fqdn(uuid12));
-		}
-			var iHPb = insp.HostConfig.PortBindings;
-			if (iHPb) {
-				async.each(Object.keys(iHPb),
-						function(portproto, done) {
-							// foreach portbinding
-							if (portproto && iHPb[portproto]) {
-								if (config.debug) {
-									console.log('ports: ', iHPb[portproto]);
-								}
-								var port = iHPb[portproto][0].HostPort;
-								putsrvrec(portproto, uuid12, uuid12, port);
-								// SRV record _service._proto.hostname.faketld port
-								// first12.faketld
-								if (insp.Config.Hostname) {
-									putsrvrec(portproto, insp.Config.Hostname, uuid12, port);
-									putsrvrecForServiceName(portproto, insp.Config.Hostname, uuid12, port);
-								}
-								if (insp.Name) {
-									putsrvrec(portproto, clean ,uuid12, port);
-									putsrvrecForServiceName(portproto, clean ,uuid12, port);
-								}
-							}
-							done();
-						}, function() {
-							cb();
-						});
-			}
+			aynch.each(getips(docker, insp), function(ip, done) {
+				if (ip) {
+					buildRecords(insp, c, publicfqdn, ips.exposed, done);
+				} else {
+					done();
+				}
+			}, cb);
 		}
 	});
 };
@@ -110,8 +151,23 @@ var cleanName = function(name) {
 	return name.replace(rxdotsorslashorcolon, "");
 };
 
-var fqdn = function(host) {
-	return host + '.' + config.faketld;
+// the public fqdn
+var publicfqdn = function(docker, host) {
+	return actualfqdn(host, docker.publicname);
+};
+
+// usually resolving to an ip associated with docker0 172.17.42.0/16
+var localfqdn = function(docker, host) {
+	return actualfqdn(host, docker.localname);
+};
+
+var actualfqdn = function(host, extra) {
+	var ret = host + '.'; 
+	if (extra) {
+		ret = extra + '.';
+	}
+	ret =  ret + config.faketld;
+	return ret;
 };
 
 var putsrvrecForServiceName = function(portproto, name, uuid12, port) {
@@ -144,27 +200,34 @@ var putsrvrec = function(portproto, name, uuid12, port) {
 };
 
 
-var getip = function(insp) {
+var getips = function(docker, insp) {
+	var ips = {
+			internal: insp.NetworkSettings.IPAddress,
+			exposed: null
+	};
 	if (insp.HostConfig.PortBindings
 			&& Object.keys(insp.HostConfig.PortBindings).length > 0) {
-		var ip = insp.HostConfig.PortBindings[Object
+		var hostboundip = insp.HostConfig.PortBindings[Object
 				.keys(insp.HostConfig.PortBindings)[0]][0].HostIp;
 		// console.log('getip ip: ', ip);
-		if (ip === '0.0.0.0') {
-			return config.publicip;
-		} else {
-			return ip;
+		if (hostboundip === '0.0.0.0') {
+			ips.exposed = docker.publicip;
+		} else if (hostbound !== ips.internal){
+			ips.exposed = hostboundip;
 		}
-	} else {
-		return insp.NetworkSettings.IPAddress;
-	}
+	} 
+	return ips;
 };
 
+
+/*
+ *  not implemented
+ *  
 var pollInterval = config.pollinterval;
 var last = Date.now() - pollInterval;
 var pollForEvents = function() {
 	var time = Date.now();
-	docker.getEvents({
+	docker.D.getEvents({
 		since : last
 	}, function(err, data) {
 		if (config.debug) {
@@ -178,18 +241,7 @@ var pollForEvents = function() {
 		last = time - pollInterval;
 	});
 };
-
-init(function(res) {
-	console.log('initialized');
-	if (config.debug) {
-		console.log(a);
-		console.log(cname);
-		console.log(srv);
-	}
-	// pollForEvents();
-	// setInterval(pollForEvents, pollInterval);
-	setInterval(refreshRecs, pollInterval);
-});
+*/
 
 server.on('query', function(query) {
 	var domain = query.name();

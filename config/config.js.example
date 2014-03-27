@@ -10,16 +10,26 @@ config.faketld = "docker.local";
 // frequency of dns entry refresh from docker containers
 config.pollinterval = 17 * 1000;
 
-// for 'publicly' exposed ports
-// when a service is offered on '0.0.0.0'
-// this is the IP lookups will return
-config.publicip = "192.168.0.20";
-
-// dockerode config
-// see: https://github.com/apocas/dockerode
-config.dockerode = {
-		socketPath: '/var/run/docker.sock'
-};
+// multiple dockers can be configured
+// each one should gets it's own namespace
+// hostname.publicname.faketld
+config.dockers  = [
+          {
+			// for 'publicly' exposed ports
+			// when a service is offered on '0.0.0.0'
+			// this is the IP lookups will return
+			publicip: "10.20.0.100", 
+			// the public name is to give this docker instance it's own namespace
+			publicname: "dockerA",
+			// the local name is to provide a namespace for routing 172.17.0.0 addresses
+			localname: "local.dockerA",
+			// dockerode config
+			// see: https://github.com/apocas/dockerode
+			dockerode: {
+				socketPath: '/var/run/docker.sock'
+			}
+          }
+          ];
 
 // node-named config
 // see: https://github.com/trevoro/node-named

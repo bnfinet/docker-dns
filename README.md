@@ -26,46 +26,49 @@ You'd like to be able to connect to ports on your dockerbox in a useful way, but
 want to have to go lookup the port mapping every time you need to wire things up.  This is called
 service discovery and there's a [DNS record](http://en.wikipedia.org/wiki/SRV_record) for that.
 
-	you@laptop:~$ host -t SRV _ssh._tcp.awesomeapp.docker.local
-	awesomeapp.docker.local has SRV record 0 10 49158 fbc938bbfec1.docker.local.
+	you@laptop:~$ host -t SRV _ssh._tcp.awesomeapp.dockerA.local
+	awesomeapp.docker.local has SRV record 0 10 49158 fbc938bbfec1.dockerA.local.
 
 Where port 49158 is the docker side published port for ssh
 
 Then you can do things like...
 
 	PORT=$(host -t SRV awesomeapp.docker.local | awk '{print $7}');
-	ssh -p $PORT awesomeapp.docker.local
+	ssh -p $PORT awesomeapp.dockerA.local
 
 Alternatively you can provide just the host to get all srv records for that container
 
-	you@laptop:~$ host -t SRV awesomeapp.docker.local
-	awesomeapp.docker.local has SRV record 0 10 49175 fbc938bbfec1.docker.local.
-	awesomeapp.docker.local has SRV record 0 10 49176 fbc938bbfec1.docker.local.
+	you@laptop:~$ host -t SRV awesomeapp.dockerA.local
+	awesomeapp.dockerA.local has SRV record 0 10 49175 fbc938bbfec1.dockerA.local.
+	awesomeapp.dockerA.local has SRV record 0 10 49176 fbc938bbfec1.dockerA.local.
 
 That doesn't tell you which services are running but it at least shows you the ports for that container.
 
 
 ## how we do that
 
+for each configured docker environment... 
 docker-dns scans the docker api periodically and builds DNS records
 for each container...
 - UUID is an A record
 - container ID (first 12 of the UUID) is an A record
 - a cleaned version of the image name is CNAME to the A record
 - hostname (run -h) is CNAME to the A record
+
 and for all exposed ports on each container several SRV records are created by looking up the container side 'port/protocol' (such as '22/tcp') in /etc/services:
 
 ````
-	_service._protocol.hostname.docker.local
-	_service._protocol.containerID.docker.local
-	_service._protocol.imagename.docker.local
+	_service._protocol.hostname.dockerA.local
+	_service._protocol.containerID.dockerA.local
+	_service._protocol.imagename.dockerA.local
 ````
 
 ## features
 
-- supports a custom fake top level domain such as 'docker.local'
+- supports a custom fake top level domain such as 'local' or 'docker.local'
+- supports multiple docker instances each with their own namespace (see the config)
+- supports separate 'local' namespace for routing of 172.17.0.0 addresses
 - maps '0.0.0.0' to a configured (possibly public) ip address
-
 
 ## config
 
