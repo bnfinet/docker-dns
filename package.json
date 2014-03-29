@@ -1,32 +1,46 @@
 {
   "name": "docker-dns",
-  "version": "0.0.1",
+  "version": "0.2.0",
   "description": "dns server backed by the docker api",
-  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
     "docker",
     "dns",
     "api"
   ],
+  "author": {
+    "name": "Benjamin Foote",
+    "email": "docker-dns@bnf.net",
+    "url": "http://www.bnf.net/"
+  },
+  "maintainer": [
+    "Benjamini Foote <docker-dns@bnf.net>"
+  ],
   "repository": {
     "type": "git",
     "url": "git@github.com:bnfinet/docker-dns.git"
   },
+  "main": "./bin/docker-dns",
+  "bin": {
+    "docker-dns": "./bin/docker-dns"
+  },
+  "directories": {
+    "lib": "./lib"
+  },
   "bugs": {
     "url": "https://github.com:bnfinet/docker-dns/issues"
   },
-  "author": "Benjamin Foote",
   "license": "MIT",
   "dependencies": {
     "async": "~0.2.9",
     "lodash": "~2.4.1",
     "node-named": "0.0.1",
     "dockerode": "~1.2.8",
-    "lazy": "~1.0.11"
+    "lazy": "~1.0.11",
+    "minimist": "0.0.8"
   },
   "devDependencies": {
     "grunt-nodemon": "~0.1.2",
