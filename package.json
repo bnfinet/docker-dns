@@ -1,9 +1,9 @@
 {
   "name": "docker-dns",
-  "version": "0.2.0",
+  "version": "0.4.0",
   "description": "dns server backed by the docker api",
   "scripts": {
-    "start": "node server.js",
+    "start": "node ./bin/docker-dns.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -23,9 +23,9 @@
     "type": "git",
     "url": "git@github.com:bnfinet/docker-dns.git"
   },
-  "main": "./bin/docker-dns",
+  "main": "./bin/docker-dns.js",
   "bin": {
-    "docker-dns": "./bin/docker-dns"
+    "docker-dns": "./bin/docker-dns.js"
   },
   "directories": {
     "lib": "./lib"
@@ -34,20 +34,23 @@
     "url": "https://github.com:bnfinet/docker-dns/issues"
   },
   "license": "MIT",
+  "engines": {
+    "node": ">=0.10.0",
+    "npm": ">=1.0.0"
+  },
+  "engineStrict": true,
   "dependencies": {
-    "async": "~0.2.9",
-    "lodash": "~2.4.1",
-    "node-named": "0.0.1",
-    "dockerode": "~1.2.8",
-    "lazy": "~1.0.11",
-    "minimist": "0.0.8"
+    "async": "^0.4.0",
+    "node-named": "^0.0.1",
+    "dockerode": "^1.2.8",
+    "lazy": "^1.0.11",
+    "minimist": "^0.0.8",
+    "lodash": "^2.4.1"
   },
   "devDependencies": {
-    "grunt-nodemon": "~0.1.2",
-    "grunt-contrib-watch": "~0.5.3",
-    "grunt": "~0.4.2",
-    "grunt-exec": "~0.4.2",
-    "grunt-contrib-jshint": "~0.8.0",
-    "grunt-cli": "~0.1.13"
+    "grunt-nodemon": "^0.2.1",
+    "grunt": "^0.4.2",
+    "grunt-contrib-jshint": "^0.9.0",
+    "grunt-cli": "^0.1.13"
   }
 }
