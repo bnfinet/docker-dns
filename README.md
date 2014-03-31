@@ -9,6 +9,10 @@ ben@bnf.net
 
 inspired by [skydock](https://github.com/crosbymichael/skydock) and [skydns](https://github.com/skynetservices/skydns)
 
+[![NPM version](https://badge.fury.io/js/docker-dns.png)](http://badge.fury.io/js/docker-dns)
+[![Dependency Status](https://david-dm.org/bnfinet/docker-dns.png)](https://david-dm.org/bnfinet/docker-dns)
+
+
 ## the use case
 
 You have a Docker.io environment setup.  You spin up new instances

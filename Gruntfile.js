@@ -5,13 +5,14 @@ module.exports = function (grunt) {
         pkg: grunt.file.readJSON('package.json'),
         jshint: {
             jshintrc: '.jshintrc',
-            all: ['Gruntfile.js', '*.js', 'lib/*.js']
+            all: ['Gruntfile.js', '*.js', 'lib/*.js', 'bin/*']
 		},
 		nodemon: {
 		    dev: {
+		    	script: './bin/docker-dns',
 		        options: {
-		            file: 'server.js',
-		            nodeArgs: ['--debug']
+		        	args: ['-d'],
+		        	nodeArgs: ['--debug']
 			    }
 		    }
 		}
@@ -21,6 +22,6 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-nodemon');
     grunt.loadNpmTasks('grunt-contrib-jshint');
     // Default task(s).
-    grunt.registerTask('default', ['nodemon'])
+    grunt.registerTask('default', ['nodemon']);
 
 };
