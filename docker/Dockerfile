@@ -1,6 +1,6 @@
 #
 # docker-dns
-# a 
+# a dns server for docker environments
 # https://github.com/bnfinet/docker-dns
 #
 
