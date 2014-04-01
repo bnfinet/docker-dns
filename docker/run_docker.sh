@@ -1,28 +1,26 @@
 #!/bin/bash
 
-IMAGE=$1
-HOST=$2
 
 function usage {
     cat <<EOF
 
-    $0 imagename hostname
+    $0 hostname /path/to/config.js [ 172.17.42.1:53 ]
 
-	runs the docker-dns container 
+    runs the docker-dns container with mappings
 
-	assumes you've built the docker dns with the name 'docker-dns':
+    by default the dns services bind to 172.17.42.1:53
 
-		sudo docker build -rm -t docker-dns .
+    assumes you've built the docker dns with the name 'docker-dns':
+
+        sudo docker build -rm -t docker-dns .
+
+    if you provide a config file it will be mapped into the proper place at run time
 
 EOF
 
 }
 
-if [ "${IMAGE}" = "" ];
-then
-	usage;
-	exit;
-fi
+HOST=$1
 
 if [ "${HOST}" = "" ];
 then
@@ -30,10 +28,35 @@ then
 	exit;
 fi
 
+CONF=$2
+CONFARG="";
+if [ ! "${CONF}" = "" ]
+then
+    CONFARG=" -v ${CONF}:/usr/lib/node_modules/docker-dns/config/config.js ";
+else
+    usage;
+    exit;
+fi
+
+BINDIPPORT=$3
+BINDARG=""
+if [ ! "${BINDPORT}" = "" ]
+then
+    BINDARG=" -p ${BINDPORT}:53/udp ";
+else
+    BINDARG=" -p 172.17.42.1:53:53/udp ";
+fi
+
+
 
 sudo docker stop docker-dns;
 sudo docker rm docker-dns;
 
-UUID=$(sudo docker run -i -d -t -h ${HOST} --name docker-dns -p 53/udp -p 22 -v /var/run/docker.sock:/var/run/docker.sock ${IMAGE})
+
+CMD="sudo docker run -i -d -t -h ${HOST} --name docker-dns ${BINDARG} -v /var/run/docker.sock:/var/run/docker.sock ${CONFARG} docker-dns";
+
+echo $CMD;
+
+UUID=$($CMD);
 
 sudo docker logs $UUID
