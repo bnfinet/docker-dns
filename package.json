@@ -40,7 +40,7 @@
   },
   "engineStrict": true,
   "dependencies": {
-    "async": "^0.4.0",
+    "async": "^0.6.0",
     "node-named": "^0.0.1",
     "dockerode": "^1.2.8",
     "lazy": "^1.0.11",
