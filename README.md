@@ -12,6 +12,21 @@ inspired by [skydock](https://github.com/crosbymichael/skydock) and [skydns](htt
 [![NPM version](https://badge.fury.io/js/docker-dns.png)](http://badge.fury.io/js/docker-dns)
 [![Dependency Status](https://david-dm.org/bnfinet/docker-dns.png)](https://david-dm.org/bnfinet/docker-dns)
 
+## installation
+
+    npm install docker-dns
+    cp ./config/config.js.example ./config/config.js
+    (edit some stuff)
+    ./bin/docker-dns.js
+    
+or just run a docker instance
+
+    cp ./config/config.js.example ./docker/config/config.js
+    (edit some stuff)
+    cd docker;
+    ./build_docker;
+    ./run_docker hostname ./config/config.js;
+
 
 ## the use case
 
@@ -30,23 +45,48 @@ You'd like to be able to connect to ports on your dockerbox in a useful way, but
 want to have to go lookup the port mapping every time you need to wire things up.  This is called
 service discovery and there's a [DNS record](http://en.wikipedia.org/wiki/SRV_record) for that.
 
-	you@laptop:~$ host -t SRV _ssh._tcp.awesomeapp.dockerA.local
-	awesomeapp.docker.local has SRV record 0 10 49158 fbc938bbfec1.dockerA.local.
+	you@laptop:~$ host -t SRV _ssh._tcp.awesomeapp.dockerA.tld
+	awesomeapp.docker.tld has SRV record 0 10 49158 fbc938bbfec1.dockerA.tld.
 
 Where port 49158 is the docker side published port for ssh
 
 Then you can do things like...
 
-	PORT=$(host -t SRV awesomeapp.docker.local | awk '{print $7}');
-	ssh -p $PORT awesomeapp.dockerA.local
+	PORT=$(host -t SRV awesomeapp.docker.tld | awk '{print $7}');
+	ssh -p $PORT awesomeapp.dockerA.tld
 
 Alternatively you can provide just the host to get all srv records for that container
 
-	you@laptop:~$ host -t SRV awesomeapp.dockerA.local
-	awesomeapp.dockerA.local has SRV record 0 10 49175 fbc938bbfec1.dockerA.local.
-	awesomeapp.dockerA.local has SRV record 0 10 49176 fbc938bbfec1.dockerA.local.
+	you@laptop:~$ host -t SRV awesomeapp.dockerA.tld
+	awesomeapp.dockerA.tld has SRV record 0 10 49175 fbc938bbfec1.dockerA.tld.
+	awesomeapp.dockerA.tld has SRV record 0 10 49176 fbc938bbfec1.dockerA.tld.
 
 That doesn't tell you which services are running but it at least shows you the ports for that container.
+
+For that you can use wild card searches...
+
+	you@laptop:~$ host -t SRV _redis.*.dockerA.tld
+	_redis.*.dockerA.tld has SRV record 0 10 49188 fbc938bbfec1.dockerA.tld.
+	_redis.*.dockerA.tld has SRV record 0 10 49189 7d6d9f0468b8.dockerA.tld.
+
+And since you can configure service discovery for multiple Docker environments you can do
+
+	you@laptop:~$ host -t SRV _redis.*.tld
+	_redis.*.tld has SRV record 0 10 49188 fbc938bbfec1.dockerA.tld.
+	_redis.*.tld has SRV record 0 10 49189 7d6d9f0468b8.dockerA.tld.
+	_redis.*.tld has SRV record 0 10 49199 4087bee527c5.dockerB.tld.
+	_redis.*.tld has SRV record 0 10 49201 95c7e60213ac.dockerB.tld.
+
+In addition there are two namespace, 'public' and 'local'.  The public side always points at
+the assigned port from Docker.  The local side points at the port atthached to the conatiner's ip
+
+	you@laptop:~$ host -t SRV _ssh.*.tld
+	_ssh.*.tld has SRV record 0 10 49188 fbc938bbfec1.dockerA.tld.
+	_ssh.*.tld has SRV record 0 10 49189 7d6d9f0468b8.dockerA.tld.
+	_ssh.*.tld has SRV record 0 10 22 fbc938bbfec1.local.dockerA.tld.
+	_ssh.*.tld has SRV record 0 10 22 7d6d9f0468b8.local.dockerA.tld.
+
+Namespace mappings for tld, public and local are set in the conf file.
 
 
 ## how we do that
@@ -59,17 +99,17 @@ for each container...
 - a cleaned version of the image name is CNAME to the A record
 - hostname (run -h) is CNAME to the A record
 
-and for all exposed ports on each container several SRV records are created by looking up the container side 'port/protocol' (such as '22/tcp') in /etc/services:
+and for all exposed ports on each container several SRV records are created by looking up the container side 'port/protocol' (such as '22/tcp') in the style of /etc/services:
 
 ````
-	_service._protocol.hostname.dockerA.local
-	_service._protocol.containerID.dockerA.local
-	_service._protocol.imagename.dockerA.local
+	_service._protocol.hostname.dockerA.tld
+	_service._protocol.containerID.dockerA.tld
+	_service._protocol.imagename.dockerA.tld
 ````
 
 ## features
 
-- supports a custom fake top level domain such as 'local' or 'docker.local'
+- supports a custom fake top level domain such as 'local' or 'docker.tld'
 - supports multiple docker instances each with their own namespace (see the config)
 - supports separate 'local' namespace for routing of 172.17.0.0 addresses
 - maps '0.0.0.0' to a configured (possibly public) ip address
@@ -87,7 +127,7 @@ on github please....
 https://github.com/bnfinet/docker-dns/issues
 
 ## next steps
-- setup multi host and wildcard lookup support (_sshd.*.docker.local)
+- setup multi host and wildcard lookup support (_sshd.*.docker.tld)
 - customized /etc/services file to include "modern" services (redis, mongodb, couchdb, ...)
 - ipv6 AAAA records
 - use Docker's event stream instead of polling
