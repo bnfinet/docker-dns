@@ -549,7 +549,8 @@ afbackup	2988/udp
 afmbackup	2989/tcp			# Afmbackup system
 afmbackup	2989/udp
 xtell		4224/tcp			# xtell server
-fax		4557/tcp			# FAX transmission service (old)
+selenium	4444/tcp			# http://seleniumhq.org
+fax		    4557/tcp			# FAX transmission service (old)
 hylafax		4559/tcp			# HylaFAX client-server protocol (new)
 distmp3		4600/tcp			# distmp3host daemon
 munin		4949/tcp	lrrd		# Munin
@@ -566,6 +567,7 @@ nsca		5667/tcp			# Nagios Agent - NSCA
 mrtd		5674/tcp			# MRT Routing Daemon
 bgpsim		5675/tcp			# MRT Routing Simulator
 canna		5680/tcp			# cannaserver
+redis		6379/tcp			# http://redis.io/topics/config
 sane-port	6566/tcp	sane saned	# SANE network scanner daemon
 ircd		6667/tcp			# Internet Relay Chat
 zope-ftp	8021/tcp			# zope management by ftp
@@ -595,8 +597,12 @@ isdnlog		20011/udp
 vboxd		20012/tcp			# voice box system
 vboxd		20012/udp
 binkp		24554/tcp			# binkp fidonet protocol
+mongodb		27017/tcp			# http://docs.mongodb.org/manual/reference/default-mongodb-port/
+mongodbshard	27018/tcp			# http://docs.mongodb.org/manual/reference/default-mongodb-port/
+mongodbconfig	27019/tcp			# http://docs.mongodb.org/manual/reference/default-mongodb-port/
 asp		27374/tcp			# Address Search Protocol
 asp		27374/udp
+mongodbweb	28017/tcp			# http://docs.mongodb.org/manual/reference/default-mongodb-port/
 csync2		30865/tcp			# cluster synchronization tool
 dircproxy	57000/tcp			# Detachable IRC Proxy
 tfido		60177/tcp			# fidonet EMSI over telnet

@@ -13,7 +13,6 @@ var Docker = require('dockerode');
 var Dinspect = require(__dirname + '/../lib/docker-inspect.js');
 var dnsserver = require(__dirname + '/../lib/dns-service.js');
 
-
 // application level object
 var ddns = {
 	argv: parseArgs(process.argv),
