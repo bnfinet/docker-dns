@@ -80,7 +80,7 @@ var main = function() {
 			} else {
 				ddns.log.info('docker-dns initialized');
 				dnsserver.startservice(ddns.config);
-//				setInterval(pollDockers, ddns.config.pollinterval);
+				setInterval(pollDockers, ddns.config.pollinterval);
 				// pollForEvents();
 				// setInterval(pollForEvents, pollInterval);
 				// setInterval(refreshRecs, config.pollinterval);
