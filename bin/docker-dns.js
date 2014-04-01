@@ -21,11 +21,8 @@ var ddns = {
 	dockers: []
 };
 
-// make the logging a little easier on the eyes
-ddns.log = function () {
-	Array.prototype.unshift.call(arguments, '[DD]');
-	console.log.apply(console, arguments);
-};
+ddns.log = require(__dirname + '/../lib/logger.js');
+ddns.log.prepend = 'DD';
 
 var configureApp = function() {
 
@@ -54,12 +51,16 @@ var configureApp = function() {
 		process.exit();
 	}
 
-	ddns.log('Loading config from ' + ddns.configFile);
+	ddns.log.info('Loading config from ' + ddns.configFile);
 	ddns.config = require(ddns.configFile);
 
 	if (ddns.argv.d || ddns.argv.debug) {
 		ddns.config.debug = true;
-		ddns.log('debuging enabled');
+	}
+	
+	if (ddns.config.debug) {
+		ddns.log.level = 'debug';
+		ddns.log.info('debuging enabled');
 	}
 
 	ddns.config.logger = ddns.log;
@@ -70,14 +71,14 @@ var main = function() {
 	configureApp();
 	initializeDockers(function(errI) {
 		if (errI) {
-			ddns.log("initializaion failed, exiting");
+			ddns.log.error("initializaion failed, exiting");
 			process.exit(1);
 		}
 		pollDockers(function(errP) {
 			if (errP) {
-				ddns.log('polling failed');
+				ddns.log.error('polling failed');
 			} else {
-				ddns.log('docker-dns initialized');
+				ddns.log.info('docker-dns initialized');
 				dnsserver.startservice(ddns.config);
 //				setInterval(pollDockers, ddns.config.pollinterval);
 				// pollForEvents();
@@ -99,28 +100,26 @@ var initializeDockers = function (cb) {
 			ddns.dockers.push(newD);
 			done();
 		} else {
-			done("ERROR initialization of docker "+ dconfig.publicname + " failed");
-		}
+			ddns.log.error("initialization of docker "+ dconfig.publicname + " failed");
+			done();
+		};
 	}, cb);
 };
 
 var pollDockers = function(cb) {
 	async.each(ddns.dockers, function(docker, done) {
 		docker.inspectContainers(function(err) {
-			if (!err) {
-				if (ddns.config.debug) {
-					ddns.log("back from inspection, off to build");
-				}
+			if (err) {
+				ddns.log.error("docker inspect err: " + err);
+				done(err);
+			} else {
+				ddns.log.debug("back from inspection, off to build");
 				docker.buildRecords(function(err, recs) {
-					if (ddns.config.debug) {
-						ddns.log("back from build, deliver recs to dns server");
-						console.log(recs);
-					}
+					ddns.log.debug("back from build, deliver recs to dns server");
+//						console.log(recs);
 					dnsserver.newrecords(recs, done);
 				});
-			} else {
-				done("docker inspect err: " + err);
-			}
+			};
 		});
 	}, function(err) {
 		if (typeof cb === 'function') {
@@ -142,8 +141,8 @@ var pollDockers = function(cb) {
 main();
 
 process.on('SIGINT', function() {
-	ddns.log("\nGracefully shutting down from SIGINT (Ctrl-C)");
-	ddns.log('exiting');
+	ddns.log.info("\nGracefully shutting down from SIGINT (Ctrl-C)");
+	ddns.log.info('exiting');
 	process.exit();
 });
 
