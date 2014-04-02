@@ -21,11 +21,13 @@ inspired by [skydock](https://github.com/crosbymichael/skydock) and [skydns](htt
     
 or just run a docker instance
 
+	git clone https://github.com/bnfinet/docker-dns.git
+	cd docker-dns
     cp ./config/config.js.example ./docker/config/config.js
     (edit some stuff)
     cd docker;
-    ./build_docker;
-    ./run_docker hostname ./config/config.js;
+    ./build_docker.sh;
+    ./run_docker.sh hostname ./config/config.js;
 
 
 ## the use case
