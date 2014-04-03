@@ -1,6 +1,6 @@
 {
   "name": "docker-dns",
-  "version": "0.5.8",
+  "version": "0.5.9",
   "description": "dns server backed by the docker api",
   "scripts": {
     "start": "node ./bin/docker-dns.js",
