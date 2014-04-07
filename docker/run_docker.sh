@@ -35,7 +35,7 @@ CONFARG="";
 if [ ! "${CONF}" = "" ]
 then
     echo "using config file ${CONF}";
-    CONFARG=" -v ${PWD}/${CONF}:/usr/lib/node_modules/docker-dns/config/config.js ";
+    CONFARG=" -v ${PWD}/${CONF}:/opt/docker-dns/config/config.js ";
 else
     usage;
     exit;

@@ -15,12 +15,15 @@
 # https://index.docker.io/u/dockerfile/nodejs/
 FROM dockerfile/nodejs
 
-RUN apt-get install -y supervisor
+RUN apt-get install -y supervisor git
 
-RUN	npm install docker-dns -g
 RUN mkdir -p /var/log/supervisor
-
 ADD ./config/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+WORKDIR /opt
+RUN git clone https://github.com/bnfinet/docker-dns.git
+WORKDIR /opt/docker-dns
+RUN npm install
 
 EXPOSE 53/udp
 

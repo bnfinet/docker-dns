@@ -14,7 +14,8 @@ inspired by [skydock](https://github.com/crosbymichael/skydock) and [skydns](htt
 
 ## installation
 
-    npm install docker-dns
+	git clone http://github.com/bnfinet/docker-dns
+    cd docker-dns
     cp ./config/config.js.example ./config/config.js
     (edit some stuff)
     ./bin/docker-dns.js
@@ -22,8 +23,8 @@ inspired by [skydock](https://github.com/crosbymichael/skydock) and [skydns](htt
 or just run a docker instance
 
 	git clone https://github.com/bnfinet/docker-dns.git
-	cd docker-dns
-    cp ./config/config.js.example ./docker/config/config.js
+	cd docker-dns/docker
+    cp ../config/config.js.example ./config/config.js
     (edit some stuff)
     cd docker;
     ./build_docker.sh;
