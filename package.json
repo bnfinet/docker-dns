@@ -17,7 +17,7 @@
     "url": "http://www.bnf.net/"
   },
   "maintainer": [
-    "Benjamini Foote <docker-dns@bnf.net>"
+    "Benjamin Foote <docker-dns@bnf.net>"
   ],
   "repository": {
     "type": "git",
