@@ -12,6 +12,22 @@ inspired by [skydock](https://github.com/crosbymichael/skydock) and [skydns](htt
 [![NPM version](https://badge.fury.io/js/docker-dns.png)](http://badge.fury.io/js/docker-dns)
 [![Dependency Status](https://david-dm.org/bnfinet/docker-dns.png)](https://david-dm.org/bnfinet/docker-dns)
 
+## docker-dns creates dns records from running containters on the fly
+
+```docker-dns``` uses the docker api to create ```A```, ```CNAME```, and ```SRV``` records.  This makes it easy to find and use containers from other containers, from the docker host, or even from the internet.  It solves the issue of having to restart containers in the proper order to properly align ```--name``` and ```--link``` directives.  Just start your container and be confident that it can be found using dns.
+
+	you@server:~$ ping hipache.dockerA.tld
+	PING ff14ccc7acf2.local.dockerA.tld (172.17.0.7) 56(84) bytes of data.
+	64 bytes from 172.17.0.7: icmp_req=1 ttl=64 time=0.046 ms
+	64 bytes from 172.17.0.7: icmp_req=2 ttl=64 time=0.041 ms
+
+## setup - configure your docker daemon
+
+The docker daemon should be run with an additional ```-dns``` flag pointing at the ip address where docker-dns will run (usally the ```docker0``` bridge).  This will populate each running container's ```/etc/resolv.conf```.
+
+   # docker daemon with -dns with dns service running behind docker0 
+   docker -d --bip=172.17.42.1/16 --dns=172.17.42.1
+
 ## installation
 
 	npm install -g docker-dns
@@ -19,7 +35,7 @@ inspired by [skydock](https://github.com/crosbymichael/skydock) and [skydns](htt
 
 or git clone..
 
-	git clone http://github.com/bnfinet/docker-dns
+      git clone http://github.com/bnfinet/docker-dns
     cd docker-dns
     cp ./config/config.js.example ./config/config.js
     (edit some stuff)
@@ -36,7 +52,7 @@ or just run a docker instance
     ./run_docker.sh hostname ./config/config.js;
 
 
-## the use case
+## the SRV use case
 
 You have a Docker.io environment setup.  You spin up new instances
 which includes mapping specific services to multiple ports.
@@ -50,10 +66,10 @@ which includes mapping specific services to multiple ports.
 	e5c777e21c60        sshd:latest                /bin/sh -c /usr/sbin   3 days ago          Exit -1                                                               namearg/sshdhost,sshd   
 
 You'd like to be able to connect to ports on your dockerbox in a useful way, but you don't
-want to have to go lookup the port mapping every time you need to wire things up.  This is called
+want to have to go lookup the port mapping and wire things up.  This is called
 service discovery and there's a [DNS record](http://en.wikipedia.org/wiki/SRV_record) for that.
 
-	you@laptop:~$ host -t SRV _ssh._tcp.awesomeapp.dockerA.tld
+	you@server:~$ host -t SRV _ssh._tcp.awesomeapp.dockerA.tld
 	awesomeapp.docker.tld has SRV record 0 10 49158 fbc938bbfec1.dockerA.tld.
 
 Where port 49158 is the docker side published port for ssh
@@ -65,7 +81,7 @@ Then you can do things like...
 
 Alternatively you can provide just the host to get all srv records for that container
 
-	you@laptop:~$ host -t SRV awesomeapp.dockerA.tld
+	you@server:~$ host -t SRV awesomeapp.dockerA.tld
 	awesomeapp.dockerA.tld has SRV record 0 10 49175 fbc938bbfec1.dockerA.tld.
 	awesomeapp.dockerA.tld has SRV record 0 10 49176 fbc938bbfec1.dockerA.tld.
 
@@ -73,13 +89,13 @@ That doesn't tell you which services are running but it at least shows you the p
 
 For that you can use wild card searches...
 
-	you@laptop:~$ host -t SRV _redis.*.dockerA.tld
+	you@server:~$ host -t SRV _redis.*.dockerA.tld
 	_redis.*.dockerA.tld has SRV record 0 10 49188 fbc938bbfec1.dockerA.tld.
 	_redis.*.dockerA.tld has SRV record 0 10 49189 7d6d9f0468b8.dockerA.tld.
 
 And since you can configure service discovery for multiple Docker environments you can do
 
-	you@laptop:~$ host -t SRV _redis.*.tld
+	you@server:~$ host -t SRV _redis.*.tld
 	_redis.*.tld has SRV record 0 10 49188 fbc938bbfec1.dockerA.tld.
 	_redis.*.tld has SRV record 0 10 49189 7d6d9f0468b8.dockerA.tld.
 	_redis.*.tld has SRV record 0 10 49199 4087bee527c5.dockerB.tld.
@@ -88,7 +104,7 @@ And since you can configure service discovery for multiple Docker environments y
 In addition there are two namespace, 'public' and 'local'.  The public side always points at
 the assigned port from Docker.  The local side points at the port atthached to the conatiner's ip
 
-	you@laptop:~$ host -t SRV _ssh.*.tld
+	you@server:~$ host -t SRV _ssh.*.tld
 	_ssh.*.tld has SRV record 0 10 49188 fbc938bbfec1.dockerA.tld.
 	_ssh.*.tld has SRV record 0 10 49189 7d6d9f0468b8.dockerA.tld.
 	_ssh.*.tld has SRV record 0 10 22 fbc938bbfec1.local.dockerA.tld.
