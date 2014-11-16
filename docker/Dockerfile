@@ -15,11 +15,13 @@
 # https://index.docker.io/u/dockerfile/nodejs/
 FROM dockerfile/nodejs
 
+# supervisor
+RUN apt-get update && apt-get upgrade -y
 RUN apt-get install -y supervisor git
-
 RUN mkdir -p /var/log/supervisor
 ADD ./config/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
+# code
 WORKDIR /opt
 RUN git clone https://github.com/bnfinet/docker-dns.git
 WORKDIR /opt/docker-dns

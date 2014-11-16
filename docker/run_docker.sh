@@ -12,10 +12,6 @@ function usage {
 
     note that ./path/to/config.js MUST be relative
 
-    assumes you've built the docker dns with the name 'docker-dns':
-
-        sudo docker build -rm -t docker-dns .
-
     if you provide a config file it will be mapped into the proper place at run time
 
 EOF
@@ -51,12 +47,12 @@ else
     BINDARG=" -p 172.17.42.1:53:53/udp ";
 fi
 
-sudo docker stop docker-dns;
-sudo docker rm docker-dns;
+docker stop docker-dns;
+docker rm docker-dns;
 
 sleep 3;
 
-CMD="sudo docker run -d -t -h ${HOST} --name docker-dns ${BINDARG} -v /var/run/docker.sock:/var/run/docker.sock -v ${PWD}/log:/var/log/supervisor ${CONFARG} docker-dns ";
+CMD="docker run -d -t -h ${HOST} --name docker-dns ${BINDARG} -v /var/run/docker.sock:/var/run/docker.sock -v ${PWD}/log:/var/log/supervisor ${CONFARG} bfoote/docker-dns ";
 
 echo $CMD;
 
@@ -84,4 +80,4 @@ cat <<EOF
 
 EOF
 
-#sudo docker logs $UUID
+#docker logs $UUID
