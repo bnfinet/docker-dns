@@ -37,6 +37,9 @@ var configureApp = function() {
 	}
 
 	ddns.configFile = ddns.argv.c || ddns.argv.config;
+        if (ddns.configFile) {
+	    ddns.configFile = process.cwd() + '/' +  ddns.configFile;
+	}
 
 	if (!ddns.configFile) {
 		// look for ./config/config.js
