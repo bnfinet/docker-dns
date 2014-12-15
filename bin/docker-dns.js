@@ -40,7 +40,7 @@ var configureApp = function() {
     
     // if a config file was set, and it's relative to CWD, set absolute path
     if (ddns.configFile && fs.existsSync(ddns.configFile)) {
-	ddns.configFile = process.cwd() + '/' +  ddns.configFile;
+	ddns.configFile = path.resolve(ddns.configFile);
     }
     
     if (!ddns.configFile) {
