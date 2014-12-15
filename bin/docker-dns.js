@@ -38,8 +38,8 @@ var configureApp = function() {
     
     ddns.configFile = ddns.argv.c || ddns.argv.config;
     
-    // if a config file was set, but it's not relative to this file, try looking from CWD
-    if (ddns.configFile && !fs.existsSync(ddns.configFile)) {
+    // if a config file was set, and it's relative to CWD, set absolute path
+    if (ddns.configFile && fs.existsSync(ddns.configFile)) {
 	ddns.configFile = process.cwd() + '/' +  ddns.configFile;
     }
     
