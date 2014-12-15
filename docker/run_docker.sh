@@ -1,14 +1,16 @@
 #!/bin/bash
 
+DOCKERBRIDGEIP=$(ip addr show dev docker0 | awk -F'[ /]*' '/inet /{print $3}');
+
 
 function usage {
     cat <<EOF
 
-    $0 hostname ./path/to/config.js [ 172.17.42.1:53 ]
+    $0 hostname ./path/to/config.js [ ${DOCKERBRIDGEIP} ]
 
     runs the docker-dns container with mappings
 
-    by default the dns services bind to 172.17.42.1:53
+    by default the dns services bind to the ip assigned to docker0 AND 127.0.0.1
 
     note that ./path/to/config.js MUST be relative
 
@@ -44,7 +46,7 @@ then
     BINDARG=" -p ${BINDIPPORT}:53/udp ";
     echo "set binding ip:port to ${BINDARG}";
 else
-    BINDARG=" -p 172.17.42.1:53:53/udp ";
+    BINDARG=" -p $DOCKERBRIDGEIP:53:53/udp -p 127.0.0.1:53:53/udp ";
 fi
 
 docker stop docker-dns;
