@@ -55,7 +55,7 @@ docker rm docker-dns;
 
 sleep 3;
 
-CMD="docker run -d -t --privileged=true -h ${HOST} --name docker-dns ${BINDARG} -v /var/run/docker.sock:/var/run/docker.sock -v ${PWD}/log:/var/log/supervisor ${CONFARG}";
+CMD="docker run -d -t --privileged=true -h ${HOST} --name docker-dns ${BINDARG} -v /var/run/docker.sock:/var/run/docker.sock -v ${PWD}/log:/var/log/supervisor ${CONFARG} $NAME";
 
 echo $CMD;
 
