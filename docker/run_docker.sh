@@ -1,5 +1,6 @@
 #!/bin/bash
 
+NAME=bfoote/docker-dns
 DOCKERBRIDGEIP=$(ip addr show dev docker0 | awk -F'[ /]*' '/inet /{print $3}');
 
 
@@ -54,7 +55,7 @@ docker rm docker-dns;
 
 sleep 3;
 
-CMD="docker run -d -t --privileged=true -h ${HOST} --name docker-dns ${BINDARG} -v /var/run/docker.sock:/var/run/docker.sock -v ${PWD}/log:/var/log/supervisor ${CONFARG} bfoote/docker-dns ";
+CMD="docker run -d -t --privileged=true -h ${HOST} --name docker-dns ${BINDARG} -v /var/run/docker.sock:/var/run/docker.sock -v ${PWD}/log:/var/log/supervisor ${CONFARG}";
 
 echo $CMD;
 
@@ -63,7 +64,7 @@ UUID=$($CMD);
 #echo $UUID;
 
 cat <<EOF
-    
+
     try this out to test if it worked:
 
        dig -t SRV \* @172.17.42.1
@@ -74,7 +75,7 @@ cat <<EOF
 
     please send pulls and patches, especially to update
     the config/etc-services file
-    
+
     Thanks!
 
     ben
