@@ -22,6 +22,7 @@ EOF
 
 }
 
+DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 HOST=$1
 
 if [ "${HOST}" = "" ];
@@ -56,7 +57,7 @@ sudo docker rm docker-dns;
 
 sleep 3;
 
-CMD="sudo docker run -d -t -h ${HOST} --name docker-dns ${BINDARG} -v /var/run/docker.sock:/var/run/docker.sock -v ${PWD}/log:/var/log/supervisor ${CONFARG} docker-dns ";
+CMD="sudo docker run -d -t -h ${HOST} --name docker-dns ${BINDARG} -v /var/run/docker.sock:/var/run/docker.sock -v ${DIR}/log:/var/log/supervisor --privileged ${CONFARG} docker-dns ";
 
 echo $CMD;
 
