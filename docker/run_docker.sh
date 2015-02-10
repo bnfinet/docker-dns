@@ -15,7 +15,7 @@ function usage {
 
     note that ./path/to/config.js MUST be relative
 
-    if you provide a config file it will be mapped into the proper place at run time
+    the config file will be mapped into the container 
 
 EOF
 
@@ -57,6 +57,7 @@ sleep 3;
 
 CMD="docker run -d -t --privileged=true -h ${HOST} --name docker-dns ${BINDARG} -v /var/run/docker.sock:/var/run/docker.sock -v ${PWD}/log:/var/log/supervisor ${CONFARG} $NAME";
 
+echo -e "\ndocker run command line:\n\n"
 echo $CMD;
 
 UUID=$($CMD);
@@ -67,9 +68,9 @@ cat <<EOF
 
     try this out to test if it worked:
 
-       dig -t SRV \* @172.17.42.1
+       dig -t SRV \* @$DOCKERBRIDGEIP
 
-       dig -t SRV _domain._udp\* @172.17.42.1
+       dig -t SRV _domain._udp\* @$DOCKERBRIDGEIP
 
     logs are available at ./log/docker-dns.log
 
