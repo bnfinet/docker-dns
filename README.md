@@ -46,10 +46,12 @@ or git clone..
     
 or just run a docker instance
 
-    docker pull bfoote/docker-dns
-    cd docker
+	git clone https://github.com/bnfinet/docker-dns.git
+	cd docker-dns/docker
     cp ../config/config.js.example ./config/config.js
     (edit some stuff)
+    cd docker;
+    ./build_docker.sh;
     ./run_docker.sh hostname ./config/config.js;
 
 ## the SRV use case
