@@ -1,6 +1,6 @@
 {
   "name": "docker-dns",
-  "version": "0.2.4",
+  "version": "0.2.6",
   "description": "dns server backed by the docker api",
   "scripts": {
     "start": "node ./bin/docker-dns.js",
@@ -41,7 +41,7 @@
   "engineStrict": true,
   "dependencies": {
     "async": "~0.9.0",
-    "dockerode": "~2.0.1",
+    "dockerode": "~2.0.6",
     "lazy": "~1.0.11",
     "lodash": "~2.4.1",
     "minimist": "~0.2.0",

@@ -1,5 +1,7 @@
 # docker-dns
-http://github.com/bnfinet/docker-dns
+     http://github.com/bnfinet/docker-dns  
+
+     https://registry.hub.docker.com/u/bfoote/docker-dns  
 
 nodejs app to offer dns services based on a running docker enironment
 
@@ -25,7 +27,8 @@ inspired by [skydock](https://github.com/crosbymichael/skydock) and [skydns](htt
 
 The docker daemon should be run with an additional ```-dns``` flag pointing at the ip address where docker-dns will run (usally the ```docker0``` bridge).  This will populate each running container's ```/etc/resolv.conf```.
 
-   # docker daemon with -dns with dns service running behind docker0 
+This shows the docker daemon with -dns with dns service running behind docker0:   
+   
    docker -d --bip=172.17.42.1/16 --dns=172.17.42.1
 
 ## installation
@@ -43,14 +46,11 @@ or git clone..
     
 or just run a docker instance
 
-	git clone https://github.com/bnfinet/docker-dns.git
-	cd docker-dns/docker
+    docker pull bfoote/docker-dns
+    cd docker
     cp ../config/config.js.example ./config/config.js
     (edit some stuff)
-    cd docker;
-    ./build_docker.sh;
     ./run_docker.sh hostname ./config/config.js;
-
 
 ## the SRV use case
 
