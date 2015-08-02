@@ -1,7 +1,7 @@
 {
     "node":true,
     "evil":false,
-    "indent":4,
+    "indent":2,
     "passfail":false,
     "plusplus":false,
     "white":false,

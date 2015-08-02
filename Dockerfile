@@ -13,7 +13,7 @@
 
 # base image
 # https://index.docker.io/u/dockerfile/nodejs/
-FROM dockerfile/nodejs
+FROM node
 
 # supervisor
 RUN apt-get update && apt-get upgrade -y

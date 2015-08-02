@@ -1,2 +1,3 @@
 Benjamin Foote http://bnf.net
 Olivier Toupin https://github.com/oliviertoupin
+Alexander Schneider https://github.com/GM-Alex

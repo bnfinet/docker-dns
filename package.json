@@ -45,7 +45,7 @@
     "lazy": "~1.0.11",
     "lodash": "~2.4.1",
     "minimist": "~0.2.0",
-    "node-named": "~0.0.1"
+    "named": "git://github.com/trevoro/node-named.git#master"
   },
   "devDependencies": {
     "grunt": "~0.4.2",
