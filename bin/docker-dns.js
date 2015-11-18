@@ -44,20 +44,26 @@ var main = function () {
 
   dockerDns.initializeDockers(function (errI) {
     if (errI) {
-      logger.error("initializaion failed, exiting");
+      logger.error("initialization failed, exiting");
       process.exit(1);
     }
 
     dockerDns.pollDockers(function (errP) {
       if (errP) {
         logger.error('polling failed');
+        process.exit(1);
       } else {
         logger.info('docker-dns initialized');
         dockerDns.dnsService.startService(dockerDns.config);
-        setInterval(dockerDns.pollDockers, dockerDns.config.pollInterval);
-        // pollForEvents();
-        // setInterval(pollForEvents, pollInterval);
-        // setInterval(refreshRecs, config.pollInterval);
+
+        setInterval(function() {
+          dockerDns.pollDockers(function (errP) {
+            if (errP) {
+              logger.error('polling failed');
+              process.exit(1);
+            }
+          });
+        }, dockerDns.config.pollInterval);
       }
     });
   });

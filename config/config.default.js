@@ -3,9 +3,9 @@ var config = {};
 config.development = true;
 config.debug = false;
 config.faketld = "docker";
-config.pollInterval = 17 * 1000;
+config.pollInterval = 15 * 1000;
 
-config.dockers  = [{
+config.dockers = [{
 	publicIp: "10.20.0.100",
 	publicName: "public",
 	localName: "local",

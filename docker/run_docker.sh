@@ -42,7 +42,7 @@ LOG=$4
 LOGARG=""
 
 if [[ ! "${LOG}" = "logging" ]]; then
-    LOAGARG=" -v ${PWD}/log:/var/log/supervisor "
+    LOGARG=" -v ${PWD}/log:/var/log/supervisor "
 fi
 
 docker stop docker-dns;
@@ -50,7 +50,7 @@ docker rm docker-dns;
 
 sleep 3;
 
-CMD="sudo docker run -d -t -h ${HOST} --name docker-dns ${BINDARG} -v /var/run/docker.sock:/var/run/docker.sock ${LOGARG} ${CONFARG} docker-dns ";
+CMD="sudo docker run --privileged -d -t -h ${HOST} --name docker-dns ${BINDARG} -v /var/run/docker.sock:/var/run/docker.sock ${LOGARG} ${CONFARG} docker-dns ";
 
 echo $CMD;
 UUID=$($CMD);
