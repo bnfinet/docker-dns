@@ -148,3 +148,6 @@ https://github.com/bnfinet/docker-dns/issues
 ## next steps
 - use Docker's event stream instead of polling
 - use a temporary name space for record creation
+
+## Troubleshooting
+- Check the permissions of the files before you build the container
