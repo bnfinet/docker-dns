@@ -52,15 +52,15 @@ sleep 3;
 
 CMD="sudo docker run --privileged -d -t -h ${HOST} --name docker-dns ${BINDARG} -v /var/run/docker.sock:/var/run/docker.sock ${LOGARG} ${CONFARG} docker-dns ";
 
-echo $CMD;
-UUID=$($CMD);
+echo ${CMD};
+UUID=$(${CMD});
 
 
 cat <<EOF
     try this out to test if it worked:
 
-       dig -t SRV \* @$DOCKERBRIDGEIP
-       dig -t SRV _domain._udp\* @$DOCKERBRIDGEIP
+       dig -t SRV \* @${DOCKERBRIDGEIP}
+       dig -t SRV _domain._udp\* @${DOCKERBRIDGEIP}
 
     logs are available at ./log/docker-dns.log
 

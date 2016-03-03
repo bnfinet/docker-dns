@@ -25,12 +25,12 @@ var main = function () {
     configFile: configFile
   };
 
-  //try {
+  try {
     var dockerDns = new DockerDns(config);
-  /*} catch (e) {
-    util.puts(e.message);
+  } catch (e) {
+    logger.error(e.message);
     process.exit();
-  }*/
+  }
 
   if (argv.h || argv.help) {
     dockerDns.showHelp();
