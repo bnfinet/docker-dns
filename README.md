@@ -1,20 +1,13 @@
 # docker-dns
-     http://github.com/bnfinet/docker-dns  
+     http://github.com/GM-Alex/docker-dns  
 
-     https://registry.hub.docker.com/u/bfoote/docker-dns  
+     https://registry.hub.docker.com/u/gmalex/docker-dns
 
-nodejs app to offer dns services based on a running docker enironment
+node js app to offer dns services based on a running docker environment
 
-Benjamin Foote  
-http://bnf.net  
-ben@bnf.net   
+Fork of Benjamin Footes awesome docker-dns (https://github.com/bnfinet/docker-dns).
 
-inspired by [skydock](https://github.com/crosbymichael/skydock) and [skydns](https://github.com/skynetservices/skydns)
-
-[![NPM version](https://badge.fury.io/js/docker-dns.png)](http://badge.fury.io/js/docker-dns)
-[![Dependency Status](https://david-dm.org/bnfinet/docker-dns.png)](https://david-dm.org/bnfinet/docker-dns)
-
-## docker-dns creates dns records from running containters on the fly
+## docker-dns creates dns records from running containers on the fly
 
 ```docker-dns``` uses the docker api to create ```A```, ```CNAME```, and ```SRV``` records.  This makes it easy to find and use containers from other containers, from the docker host, or even from the internet.  It solves the issue of having to restart containers in the proper order to properly align ```--name``` and ```--link``` directives.  Just start your container and be confident that it can be found using dns.
 
@@ -25,7 +18,7 @@ inspired by [skydock](https://github.com/crosbymichael/skydock) and [skydns](htt
 
 ## setup - configure your docker daemon
 
-The docker daemon should be run with an additional ```-dns``` flag pointing at the ip address where docker-dns will run (usally the ```docker0``` bridge).  This will populate each running container's ```/etc/resolv.conf```.
+The docker daemon should be run with an additional ```-dns``` flag pointing at the ip address where docker-dns will run (usually the ```docker0``` bridge).  This will populate each running container's ```/etc/resolv.conf```.
 
 This shows the docker daemon with -dns with dns service running behind docker0:   
    
@@ -46,10 +39,12 @@ or git clone..
     
 or just run a docker instance
 
-    docker pull bfoote/docker-dns
-    cd docker
+	git clone https://github.com/bnfinet/docker-dns.git
+	cd docker-dns/docker
     cp ../config/config.js.example ./config/config.js
     (edit some stuff)
+    cd docker;
+    ./build_docker.sh;
     ./run_docker.sh hostname ./config/config.js;
 
 ## the SRV use case
@@ -102,7 +97,7 @@ And since you can configure service discovery for multiple Docker environments y
 	_redis.*.tld has SRV record 0 10 49201 95c7e60213ac.dockerB.tld.
 
 In addition there are two namespace, 'public' and 'local'.  The public side always points at
-the assigned port from Docker.  The local side points at the port atthached to the conatiner's ip
+the assigned port from Docker.  The local side points at the port attached to the containers ip
 
 	you@server:~$ host -t SRV _ssh.*.tld
 	_ssh.*.tld has SRV record 0 10 49188 fbc938bbfec1.dockerA.tld.
@@ -151,6 +146,8 @@ on github please....
 https://github.com/bnfinet/docker-dns/issues
 
 ## next steps
-- ipv6 AAAA records
 - use Docker's event stream instead of polling
 - use a temporary name space for record creation
+
+## Troubleshooting
+- Check the permissions of the files before you build the container

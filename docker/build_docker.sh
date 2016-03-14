@@ -1,5 +1,5 @@
 #!/bin/bash
 
-# docker rmi docker-dns
-# docker build --no-cache --rm -t docker-dns .
-docker build --rm -t bfoote/docker-dns .
+DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+sudo docker rmi docker-dns
+sudo docker build --rm -t docker-dns ${DIR}/../
